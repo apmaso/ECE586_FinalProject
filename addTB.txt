@@ -1,0 +1,78 @@
+Decoding inst.opcode is: 0     opcode name is:     rd is: 0     rs is: 0     rt is: 0     type is 0     pipestage is: 1    serial is: 0
+register[0] is: 0
+register[1] is: 1004
+register[2] is: 1204
+register[3] is: 0
+register[4] is: 0
+register[5] is: 0
+register[6] is: 0
+register[7] is: 0
+register[8] is: 0
+register[9] is: 0
+register[10] is: 0
+register[11] is: 50
+register[12] is: 32
+register[13] is: 0
+register[14] is: 0
+register[15] is: 0
+register[16] is: 0
+register[17] is: 0
+register[18] is: 0
+register[19] is: 0
+register[20] is: 0
+register[21] is: 0
+register[22] is: 0
+register[23] is: 0
+register[24] is: 0
+register[25] is: 0
+register[26] is: 0
+register[27] is: 0
+register[28] is: 0
+register[29] is: 0
+register[30] is: 0
+register[31] is: 0
+exiting decode.
+flush after decode = 0
+
+Fetching inst.opcode is: 0     opcode name is:     rd is: 0     rs is: 0     rt is: 0     type is 0     pipestage is: 0    serial is: 0
+exiting fetch.
+flush after fetch = 0
+Address: 44; contents: 0
+Address: 48; contents: 0
+Address: 52; contents: 0
+Address: 56; contents: 0
+Address: 60; contents: 0
+Address: 64; contents: 0
+Address: 68; contents: 0
+Address: 72; contents: 0
+Address: 76; contents: 0
+Address: 80; contents: 0
+Address: 84; contents: 0
+Address: 88; contents: 0
+Address: 92; contents: 0
+Address: 96; contents: 0
+Address: 100; contents: 0
+Address: 104; contents: 0
+Address: 108; contents: 0
+Address: 112; contents: 0
+Address: 116; contents: 0
+Address: 120; contents: 0
+Address: 124; contents: 0
+Address: 128; contents: 0
+Address: 132; contents: 0
+Address: 136; contents: 0
+Address: 140; contents: 0
+Address: 144; contents: 0
+Address: 148; contents: 0
+Address: 152; contents: 0
+Address: 156; contents: 0
+Address: 160; contents: 0
+Address: 164; contents: 0
+Address: 168; contents: 0
+Address: 172; contents: 0
+Address: 176; contents: 0
+Address: 180; contents: 0
+Address: 184; contents: 0
+Address: 188; contents: 0
+Address: 192; contents: 0
+Address: 196; contents: 0

@@ -194,13 +194,19 @@ void fill_mem(int data_seg[], int num[SIZ], int linect){
 	
 	//printf("              data_seg is: %d\n", data_seg[linect]);//TODO:KEEP FOR DEBUGGING?
 }
-
+/*
 void print_mem(int data_seg[], int datact){
 	for(int i=0;i<datact;i++){
 		int j=((i+1)*4);
-		if(data_seg[i] !=0){
+		//if(data_seg[i] !=0){
 			printf("Address: %d;  contents: %d\n", j, data_seg[i]);
-		}
+		//}
+	}
+}
+*/
+void print_mem2(int data_seg[], int datact){
+	for(int i = 0;i<datact;i++){
+		printf("Address: %d; contents: %d\n", ((i+progstop)*4), data_seg[i]);
 	}
 }
 
@@ -228,24 +234,15 @@ void prt32(int num[SIZ]){//TODO: THIS IS FOR DEBUGGING, mostly unused.
 }
 
 int LDW(int rt, int effective_address, int gpReg[], int progstop){
-	printf("RAW effective address is: %d\n", effective_address);
-	gpReg[rt]=data_seg[((effective_address-100)/4)];
-	//gpReg[rt]=data_seg[(((effective_address-25)/4))];
-	printf("CCCCgpReg[rt] is: %d\n", gpReg[rt]);
 
-	printf("effective_address is: %d\n", effective_address);
-	printf("data at effective address: %d\n", data_seg[((effective_address+100)/4)]);
+	gpReg[rt]=data_seg[(effective_address/4)-(progstop)];
+
 	return rt;
 }
 
 int STW(int rt, int effective_address, int gpReg[]){	
+	data_seg[(effective_address/4)-(progstop)]=gpReg[rt];
 
-	int effective_index=((effective_address)/4);
-	data_seg[effective_index-1]=gpReg[rt];
-	//printf("CCCCgpReg[rt] is: %d\n", gpReg[rt]);
-	printf("effective_address is: %d\n", effective_address);
-	printf("progstop is: %d\n", progstop);
-	
        	return 0;
 }
 
@@ -332,7 +329,7 @@ int SUB(int rs, int rt){
 }
 
 int SUBI(int rs, int imm){
-	int rt=rs+imm;
+	int rt=rs-imm;
 	return rt;
 }
 
@@ -387,11 +384,11 @@ void print_reg(int gpReg[]){
 }
 
 //function that assigns value of one struct to another.
-////TODO rename this function to have a better name.
 void copy_to_pipe(struct instruction *an_instruction, struct instruction *other_instruction){
 	
 	other_instruction->opcode=an_instruction->opcode;
 	for(int i=0;i<5;i++){
+		
 		other_instruction->opcode_name[i]=an_instruction->opcode_name[i];
 	}
 	/*

@@ -11,6 +11,8 @@ struct statistics mystats;
 
 struct instruction program[100]; 
 struct instruction pipeline[5];
+int watch_out = 0;
+
 
 //program counter:
 int pc=0;
@@ -34,7 +36,6 @@ int wrong_path_start = 0;
 
 int branch_encountered=0;
 int flush =0;
-int watch_out = 0;
 //
 int pipeline_head;  //head->always points to the function that's in the status of fetch; NEEDS to be initialized to zero.
 int pipeline_tail;  //tail->always points to the function that's in the status of write_back;  NEEDS to be initialized to zero.
@@ -68,8 +69,10 @@ int main(int argc, char* argv[]) {
 	int linect = 0;//maintain a count of the lines as we step through the file.
 	initialize_reg(gpReg);
 
-	fptr = fopen("image.txt", "r"); //("//simpleLDWtb.txt", "r");
-	//imageAddTB.txt
+	fptr = fopen("SubTB2.txt", "r"); //("//simpleLDWtb.txt", "r");
+    //LoopyTB.txt
+    //SubTB2.txt
+    //imageAddTB.txt
 	//TEST.txt
 	//TEST2.txt
 	//Test3.txt
@@ -116,11 +119,13 @@ int main(int argc, char* argv[]) {
 		cleanup_pipe();	
 		//write_back: just move it to write back stage from memory.
 		printf("Cycle: %d____________________________________________________________\n", cycle);
+		printf("PC is %d____________________________________________________________\n", pc);
 		write_back();
 
 		printf("flush after write back = %d\n", flush);
 		//mem-access, if load or store, there is a memory operation. otherwise just move it forward, probably. 
 		memory_access(&pc);
+		
 		printf("flush after memory acces = %d\n", flush);
 		//execute's the program.
 		execute_instruction(&pc);
@@ -158,7 +163,7 @@ int main(int argc, char* argv[]) {
 	
 	//printf("datact is: %d\n", data_ct);
 	if(debug){
-		print_mem(data_seg, data_ct);
+		print_mem2(data_seg, data_ct);
 	}
 	exit(EXIT_SUCCESS);
 }//end of main function.
@@ -377,6 +382,7 @@ void flush_pipeline(){
 					pipeline[j].pipe_stage = -1;
 					wrong_path[i].opcode = -1;
 					wrong_path[i].pipe_stage = -1;
+					printf("serial getting flushed: %d\n", wrong_path[i].serial);
 				}
 
 			}	
@@ -415,12 +421,10 @@ int  pipe_empty() {
 void fetch_instruction(int *pc){
 	
 	int fetched_inst_stage = stagebusy(0);
-	//printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^fetched_inst_stage is: %d\n", fetched_inst_stage);
 	if ((fetched_inst_stage == -1 || *pc == 1) && flush !=1) {
 			
 		int empty_pipe_slot=pipe_empty();
 			
-		//printf("@@@@@@@      flush !=1 && cycle !=flush_cycle || flush_cycle+1");
 		copy_to_pipe(&program[*pc], &pipeline[empty_pipe_slot]);
 		pipeline[empty_pipe_slot].pipe_stage=0; 
 		//branch needs different handling.
@@ -442,7 +446,15 @@ void fetch_instruction(int *pc){
 	}
 	if(flush==1){
 		flush=0;
+		watch_out=0;
+		wrong_path_start=0;
+		for(int i=0;i<5;i++){
+			
+			wrong_path[i].opcode=-1;
+			wrong_path[i].pipe_stage=-1;
+		}
 	}
+
 	printf("exiting fetch.\n");
 }
 
@@ -597,7 +609,7 @@ void memory_access(int *pc){
 
 			if(pipeline[executed_inst_index].opcode==12 /*&& no store with same address is pending*/ ){//type 1.
 					
-				reg_ready[pipeline[executed_inst_index].rt]=cycle+1;//FIXME: how will we handle forwarding/no-forawrding in a load instance?
+				reg_ready[pipeline[executed_inst_index].rt]=cycle;//FIXME: how will we handle forwarding/no-forawrding in a load instance?
 				//printf("********************Load REG_Ready: %d\n", pipeline[executed_inst_index].rt);
 				printf("mem inst. ld ");	
 
@@ -628,16 +640,16 @@ void memory_access(int *pc){
 
 				}
 			}
-			else if(pipeline[executed_inst_index].opcode == 16){
+			else if(pipeline[executed_inst_index].opcode == 16){//opcode 16 = jump.
 				//printf("************************************executing the jump in type1");
-				int target_pc = (gpReg[pipeline[executed_inst_index].rs]) /4;
+				int target_pc = (gpReg[pipeline[executed_inst_index].rs]) /4;//PC is an index, thus we divide by 4."
 
 				//flushing pipeline with all wrong path instructions:
-				if(target_pc != (*pc)){
+				//if(target_pc != (*pc)){
 					for(int i=0;i<5;i++){
 						printf("wrong path[%d] is: %d\n", i, wrong_path[i].serial);
 					}
-			
+						
 					flush_pipeline();
 					flush = 1;
 					wrong_path_start = 0;
@@ -645,7 +657,7 @@ void memory_access(int *pc){
 					(*pc)= target_pc;
 					printf("Flushing from jump:\n");
 										
-				}
+				//}
 				
 				pipeline[executed_inst_index].pipe_stage=3;
 				printf("mem inst./j ");
@@ -655,8 +667,8 @@ void memory_access(int *pc){
 			//same code as else if from above being modified to handle BZ branches instead of jumps.
 			else if(pipeline[executed_inst_index].opcode == 14) {
 				printf("************************************executing the BZ Rs x BRANCH in type1");
-				int target_pc =((pipeline[executed_inst_index].imm)+(*pc)-1);
 				
+				int target_pc =((pipeline[executed_inst_index].imm)+(pipeline[executed_inst_index].serial));
 				//flushing pipeline with all wrong path instructions:
 				if(gpReg[pipeline[executed_inst_index].rs] == 0){//FIXME:if target_PC==PC we should not flush.
 					for(int i=0;i<5;i++){
@@ -669,20 +681,24 @@ void memory_access(int *pc){
 					clear_wrong_path_buffer();
 					printf("\nBBBB target_pc is: %d\n", target_pc);
 					printf("current pc is: %d\n", (*pc));
-					(*pc)= target_pc-1;
+					(*pc)= target_pc;
 					printf("Flushing from BZ Rs x:\n");
 										
 				}	
+				else{
+					watch_out=0;
+					clear_wrong_path_buffer();
+				}
 				pipeline[executed_inst_index].pipe_stage=3;
 				printf("mem inst./BZ ");
 				display_struct(&pipeline[executed_inst_index]);
 
 			}
 			//same code as else if from above, being modified to handle BEQ branches instead of BZ branches.	
-			else if(pipeline[executed_inst_index].opcode == 15){
+			else if(pipeline[executed_inst_index].opcode == 15){//15 is BEQ's opcode.
 
 				printf("************************************executing the BEQ Rs x BRANCH in type1");
-				int target_pc =((pipeline[executed_inst_index].imm)+(*pc)-1);
+				int target_pc =((pipeline[executed_inst_index].imm)+(pipeline[executed_inst_index].serial));
 				printf("imm is %d/n", pipeline[executed_inst_index].imm);
 				//flushing pipeline with all wrong path instructions:
 				if(gpReg[pipeline[executed_inst_index].rs]==gpReg[pipeline[executed_inst_index].rt]){
@@ -701,6 +717,11 @@ void memory_access(int *pc){
 										
 				
 				}	
+				else{
+					watch_out=0;
+					clear_wrong_path_buffer();
+				}
+
 				pipeline[executed_inst_index].pipe_stage=3;
 				printf("mem inst./BEQ ");
 				display_struct(&pipeline[executed_inst_index]);
@@ -819,6 +840,7 @@ void clear_wrong_path_buffer(){
 		wrong_path[i].pipe_stage = -1;
 		wrong_path[i].serial = -1;
 	}
+	wrong_path_start=0;
 }
 
 

@@ -36,7 +36,8 @@ void print_program(int linect);
 const char *extract_opcode_str(int opcode);
 void parse(struct instruction *an_instruction, int num[SIZ], int serial);
 void fill_mem(int data_seg[], int num[SIZ], int datact);
-void print_mem(int data_seg[], int linect);
+//void print_mem(int data_seg[], int linect);
+void print_mem2(int data_seg[], int datact);
 
 void initialize_reg(int gpReg[32]);
 int process_code(struct instruction *an_instruction, int gpReg[]);
