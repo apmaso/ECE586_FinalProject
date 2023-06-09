@@ -667,8 +667,12 @@ void memory_access(int *pc){
 			//same code as else if from above being modified to handle BZ branches instead of jumps.
 			else if(pipeline[executed_inst_index].opcode == 14) {
 				printf("************************************executing the BZ Rs x BRANCH in type1");
-				
-				int target_pc =((pipeline[executed_inst_index].imm)+(pipeline[executed_inst_index].serial));
+			
+                // *********************************************************************************
+                // Alex is debugging BZ and I believe we must divide the immediate value by 4 if we want to  
+                // Keep the internal PC equal to the line number-1 and NOT a multiple of 4
+                // *********************************************************************************
+				int target_pc =((pipeline[executed_inst_index].imm/4)+(pipeline[executed_inst_index].serial));
 				//flushing pipeline with all wrong path instructions:
 				if(gpReg[pipeline[executed_inst_index].rs] == 0){//FIXME:if target_PC==PC we should not flush.
 					for(int i=0;i<5;i++){
