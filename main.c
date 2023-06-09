@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
 	int linect = 0;//maintain a count of the lines as we step through the file.
 	initialize_reg(gpReg);
 
-	fptr = fopen("SubTB2.txt", "r"); //("//simpleLDWtb.txt", "r");
+	fptr = fopen("LoopyTB.txt", "r"); //("//simpleLDWtb.txt", "r");
     //LoopyTB.txt
     //SubTB2.txt
     //imageAddTB.txt
